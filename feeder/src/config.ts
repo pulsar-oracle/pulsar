@@ -25,3 +25,10 @@ export function loadConfig(): Config {
     activeFeeds: (process.env.ACTIVE_FEEDS ?? "XLM_USD").split(",").map((f) => f.trim()),
   };
 }
+
+/** Return the Horizon URL for the current network */
+export function horizonUrl(config: Config): string {
+  return config.network === "mainnet"
+    ? "https://horizon.stellar.org"
+    : "https://horizon-testnet.stellar.org";
+}
