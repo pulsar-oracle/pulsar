@@ -31,3 +31,8 @@ pub fn store_feed(env: &Env, feed_id: &Symbol, value: i128, submissions: u32) {
 pub fn read_feed(env: &Env, feed_id: &Symbol) -> Option<DataFeed> {
     env.storage().persistent().get(feed_id)
 }
+
+/// Validate that a submission timestamp is not too stale (within 5 minutes)
+pub fn is_fresh(submission_ts: u64, current_ts: u64) -> bool {
+    current_ts.saturating_sub(submission_ts) <= 300
+}
