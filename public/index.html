@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pulsar — Decentralized Oracle Network for Stellar</title>
+  <meta name="description" content="Pulsar is an open-source decentralized oracle network built natively for Soroban smart contracts on Stellar." />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #04060a;
+      --surface: #0c1018;
+      --border: #1a2236;
+      --accent: #6C8EEF;
+      --accent2: #A78BFA;
+      --text: #E2E8F0;
+      --muted: #64748B;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+
+    /* NAV */
+    nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1.25rem 2rem;
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      background: rgba(4,6,10,0.9);
+      backdrop-filter: blur(12px);
+      z-index: 10;
+    }
+    .nav-logo { font-size: 1.1rem; font-weight: 700; letter-spacing: -0.02em; }
+    .nav-logo span { color: var(--accent); }
+    .nav-links { display: flex; gap: 2rem; }
+    .nav-links a { color: var(--muted); text-decoration: none; font-size: 0.9rem; transition: color .2s; }
+    .nav-links a:hover { color: var(--text); }
+
+    /* HERO */
+    .hero {
+      text-align: center;
+      padding: 7rem 1.5rem 5rem;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    .badge {
+      display: inline-block;
+      background: rgba(108,142,239,0.12);
+      color: var(--accent);
+      border: 1px solid rgba(108,142,239,0.3);
+      padding: 0.3rem 0.9rem;
+      border-radius: 999px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      margin-bottom: 1.5rem;
+    }
+    h1 {
+      font-size: clamp(2.4rem, 6vw, 4rem);
+      font-weight: 800;
+      letter-spacing: -0.04em;
+      line-height: 1.1;
+      margin-bottom: 1.2rem;
+      background: linear-gradient(135deg, #E2E8F0 0%, #94A3B8 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .hero p {
+      font-size: 1.15rem;
+      color: var(--muted);
+      max-width: 580px;
+      margin: 0 auto 2.5rem;
+    }
+    .cta-group { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.75rem 1.6rem;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      text-decoration: none;
+      transition: all .2s;
+    }
+    .btn-primary { background: var(--accent); color: #fff; }
+    .btn-primary:hover { background: #5a7de8; transform: translateY(-1px); }
+    .btn-secondary { background: var(--surface); color: var(--text); border: 1px solid var(--border); }
+    .btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
+
+    /* HOW IT WORKS */
+    section { padding: 5rem 1.5rem; max-width: 1000px; margin: 0 auto; }
+    h2 { font-size: 1.9rem; font-weight: 700; letter-spacing: -0.03em; margin-bottom: 0.5rem; }
+    .section-sub { color: var(--muted); margin-bottom: 3rem; font-size: 1rem; }
+
+    .steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.5rem; }
+    .step {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.75rem;
+      position: relative;
+    }
+    .step-num {
+      width: 2rem; height: 2rem;
+      border-radius: 50%;
+      background: rgba(108,142,239,0.15);
+      color: var(--accent);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.85rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+    }
+    .step h3 { font-size: 1rem; font-weight: 600; margin-bottom: 0.4rem; }
+    .step p { font-size: 0.88rem; color: var(--muted); }
+
+    /* FEEDS */
+    .feeds-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+    }
+    .feeds-table th {
+      text-align: left;
+      padding: 0.75rem 1rem;
+      color: var(--muted);
+      font-weight: 500;
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      border-bottom: 1px solid var(--border);
+    }
+    .feeds-table td {
+      padding: 1rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .feeds-table tr:last-child td { border-bottom: none; }
+    .dot {
+      display: inline-block;
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: #22C55E;
+      margin-right: 0.5rem;
+      box-shadow: 0 0 6px #22C55E;
+    }
+    .table-wrap {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    /* CODE */
+    .code-block {
+      background: #0a0e17;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.5rem;
+      overflow-x: auto;
+    }
+    pre { font-family: "JetBrains Mono", "Fira Code", monospace; font-size: 0.85rem; line-height: 1.7; }
+    .kw { color: #A78BFA; }
+    .fn { color: #6C8EEF; }
+    .str { color: #86EFAC; }
+    .cm { color: #475569; }
+
+    /* FOOTER */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 2.5rem 1.5rem;
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.85rem;
+    }
+    footer a { color: var(--accent); text-decoration: none; }
+    footer a:hover { text-decoration: underline; }
+
+    @media (max-width: 600px) {
+      nav { padding: 1rem; }
+      .nav-links { gap: 1rem; }
+      .hero { padding: 4rem 1rem 3rem; }
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-logo">⬡ <span>Pulsar</span></div>
+  <div class="nav-links">
+    <a href="#how-it-works">How it works</a>
+    <a href="#feeds">Feeds</a>
+    <a href="#usage">Usage</a>
+    <a href="https://github.com/pulsar-oracle/pulsar" target="_blank" rel="noopener">GitHub</a>
+  </div>
+</nav>
+
+<div class="hero">
+  <div class="badge">Built for Stellar · Soroban-native</div>
+  <h1>The Oracle Network for Soroban</h1>
+  <p>
+    Pulsar brings real-world data on-chain. A decentralized network of feeder nodes
+    aggregates price feeds and delivers them trustlessly to any Soroban smart contract.
+  </p>
+  <div class="cta-group">
+    <a href="https://github.com/pulsar-oracle/pulsar" class="btn btn-primary" target="_blank" rel="noopener">
+      View on GitHub
+    </a>
+    <a href="#usage" class="btn btn-secondary">Read the Docs</a>
+  </div>
+</div>
+
+<section id="how-it-works">
+  <h2>How It Works</h2>
+  <p class="section-sub">Three steps from real-world data to your Soroban contract.</p>
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">1</div>
+      <h3>Feeder Nodes Fetch</h3>
+      <p>Independent operators run Pulsar feeder nodes that pull price data from multiple CEXs and APIs every 60 seconds.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <h3>On-Chain Aggregation</h3>
+      <p>The Pulsar aggregator contract collects submissions, computes the median, and stores the result — all on Stellar Mainnet.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <h3>Your Contract Reads</h3>
+      <p>Any Soroban contract reads a Pulsar feed with a single cross-contract call. No whitelisting, no API keys.</p>
+    </div>
+  </div>
+</section>
+
+<section id="feeds">
+  <h2>Live Data Feeds</h2>
+  <p class="section-sub">Available on Stellar Testnet — Mainnet launching soon.</p>
+  <div class="table-wrap">
+    <table class="feeds-table">
+      <thead>
+        <tr>
+          <th>Feed</th>
+          <th>Description</th>
+          <th>Update Interval</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>XLM_USD</code></td>
+          <td>XLM / US Dollar spot price</td>
+          <td>60s</td>
+          <td><span class="dot"></span>Testnet</td>
+        </tr>
+        <tr>
+          <td><code>BTC_USD</code></td>
+          <td>Bitcoin / US Dollar spot price</td>
+          <td>60s</td>
+          <td><span class="dot"></span>Testnet</td>
+        </tr>
+        <tr>
+          <td><code>ETH_USD</code></td>
+          <td>Ethereum / US Dollar spot price</td>
+          <td>60s</td>
+          <td><span class="dot"></span>Testnet</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section id="usage">
+  <h2>Consume a Feed</h2>
+  <p class="section-sub">One cross-contract call is all it takes.</p>
+  <div class="code-block">
+    <pre><span class="cm">// Read the XLM/USD price inside your Soroban contract</span>
+<span class="kw">pub fn</span> <span class="fn">get_xlm_price</span>(env: Env, pulsar: Address) -> i128 {
+    <span class="kw">let</span> client = pulsar_contracts::Client::new(&env, &pulsar);
+    <span class="kw">let</span> feed = client.<span class="fn">get</span>(&symbol_short!(<span class="str">"XLM_USD"</span>))
+        .expect(<span class="str">"feed not found"</span>);
+    feed.value <span class="cm">// scaled by 1_000_000 → $1.05 = 1_050_000</span>
+}</pre>
+  </div>
+</section>
+
+<footer>
+  <p>
+    Pulsar is open-source software — <a href="https://github.com/pulsar-oracle/pulsar" target="_blank" rel="noopener">contribute on GitHub</a>.
+    Built for the <a href="https://stellar.org" target="_blank" rel="noopener">Stellar</a> ecosystem.
+  </p>
+</footer>
+
+</body>
+</html>
