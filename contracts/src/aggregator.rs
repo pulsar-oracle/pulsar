@@ -1,5 +1,5 @@
-use soroban_sdk::{Env, Symbol, Vec};
 use crate::types::{DataFeed, Submission};
+use soroban_sdk::{Env, Symbol, Vec};
 
 /// Collect raw submissions and compute the median value
 pub fn aggregate(env: &Env, submissions: &Vec<Submission>) -> i128 {
@@ -38,6 +38,10 @@ pub fn read_feed(env: &Env, feed_id: &Symbol) -> Option<DataFeed> {
 }
 
 /// Validate that a submission timestamp is not too stale (within 5 minutes)
+// Not yet called from submit()/aggregate() — wiring this in is a protocol
+// design decision (e.g. drop stale entries before aggregating vs. reject
+// the whole submission) that needs its own review, not a lint fix.
+#[allow(dead_code)]
 pub fn is_fresh(submission_ts: u64, current_ts: u64) -> bool {
     current_ts.saturating_sub(submission_ts) <= 300
 }
