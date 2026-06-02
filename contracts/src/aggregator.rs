@@ -14,7 +14,7 @@ pub fn aggregate(env: &Env, submissions: &Vec<Submission>) -> i128 {
         values.insert(idx, s.value);
     }
     let mid = values.len() / 2;
-    if values.len() % 2 == 0 {
+    if values.len().is_multiple_of(2) {
         (values.get_unchecked(mid - 1) + values.get_unchecked(mid)) / 2
     } else {
         values.get_unchecked(mid)
