@@ -2,17 +2,22 @@ use soroban_sdk::{Env, Symbol, Vec};
 use crate::types::{DataFeed, Submission};
 
 /// Collect raw submissions and compute the median value
-pub fn aggregate(submissions: &Vec<Submission>) -> i128 {
+pub fn aggregate(env: &Env, submissions: &Vec<Submission>) -> i128 {
     if submissions.is_empty() {
         return 0;
     }
-    let mut values: std::vec::Vec<i128> = submissions.iter().map(|s| s.value).collect();
-    values.sort();
+    let mut values: Vec<i128> = Vec::new(env);
+    for s in submissions.iter() {
+        let idx = match values.binary_search(s.value) {
+            Ok(i) | Err(i) => i,
+        };
+        values.insert(idx, s.value);
+    }
     let mid = values.len() / 2;
     if values.len() % 2 == 0 {
-        (values[mid - 1] + values[mid]) / 2
+        (values.get_unchecked(mid - 1) + values.get_unchecked(mid)) / 2
     } else {
-        values[mid]
+        values.get_unchecked(mid)
     }
 }
 

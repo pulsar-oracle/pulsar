@@ -39,7 +39,7 @@ impl PulsarOracle {
 
         // Aggregate once we have enough submissions
         if pending.len() >= 3 {
-            let aggregated = aggregator::aggregate(&pending);
+            let aggregated = aggregator::aggregate(&env, &pending);
             aggregator::store_feed(&env, &feed_id, aggregated, pending.len());
             env.storage().temporary().remove(&feed_id);
         }
