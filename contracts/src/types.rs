@@ -2,6 +2,7 @@ use soroban_sdk::{contracttype, Symbol};
 
 /// A single data point submitted by a feeder node
 #[contracttype]
+#[derive(Clone)]
 pub struct Submission {
     pub feeder: soroban_sdk::Address,
     pub value: i128,
