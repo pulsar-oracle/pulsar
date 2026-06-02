@@ -19,7 +19,7 @@ impl PulsarOracle {
 
     /// Submit a data point for a feed (feeder nodes call this)
     pub fn submit(env: Env, feeder: Address, feed_id: Symbol, value: i128) {
-        env.require_auth(&feeder);
+        feeder.require_auth();
         assert!(
             feeds::is_registered(&env, &feed_id),
             "feed not registered"
