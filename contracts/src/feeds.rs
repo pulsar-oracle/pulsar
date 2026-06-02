@@ -1,5 +1,4 @@
 use soroban_sdk::{Env, Symbol, Vec};
-use crate::types::DataFeed;
 
 const FEEDS_KEY: &str = "FEEDS";
 

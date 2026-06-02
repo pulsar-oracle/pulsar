@@ -1,5 +1,5 @@
 #![no_std]
-use soroban_sdk::{contract, contractimpl, symbol_short, Address, Env, Symbol, Vec};
+use soroban_sdk::{contract, contractimpl, Address, Env, Symbol, Vec};
 
 mod aggregator;
 mod feeds;
@@ -59,7 +59,8 @@ impl PulsarOracle {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use soroban_sdk::testutils::{Address as _, Ledger};
+    use soroban_sdk::symbol_short;
+    use soroban_sdk::testutils::Address as _;
     use soroban_sdk::Env;
 
     #[test]
