@@ -28,16 +28,27 @@ impl PulsarOracle {
     pub fn submit(env: Env, feeder: Address, feed_id: Symbol, value: i128) {
         feeder.require_auth();
         assert!(feeds::is_registered(&env, &feed_id), "feed not registered");
+        let now = env.ledger().timestamp();
         let submission = Submission {
             feeder,
             value,
-            timestamp: env.ledger().timestamp(),
+            timestamp: now,
         };
-        let mut pending: Vec<Submission> = env
+        let stored: Vec<Submission> = env
             .storage()
             .temporary()
             .get(&feed_id)
             .unwrap_or(Vec::new(&env));
+
+        // Drop stale pending submissions before considering this one, so a
+        // feed that goes quiet for a while can't have old data mixed into
+        // the next aggregation once it resumes.
+        let mut pending: Vec<Submission> = Vec::new(&env);
+        for s in stored.iter() {
+            if aggregator::is_fresh(s.timestamp, now) {
+                pending.push_back(s);
+            }
+        }
 
         // Replace this feeder's existing pending submission (if any) rather
         // than appending, so one feeder can't pad the round with repeated
@@ -78,7 +89,7 @@ impl PulsarOracle {
 mod tests {
     use super::*;
     use soroban_sdk::symbol_short;
-    use soroban_sdk::testutils::Address as _;
+    use soroban_sdk::testutils::{Address as _, Ledger};
     use soroban_sdk::Env;
 
     #[test]
@@ -137,6 +148,39 @@ mod tests {
 
         let result = client.get(&feed_id).expect("feed should exist");
         assert_eq!(result.value, 3_000_000); // median of 3_000_000/2_900_000/3_100_000
+    }
+
+    #[test]
+    fn test_stale_submission_is_pruned() {
+        let env = Env::default();
+        env.mock_all_auths();
+        let contract_id = env.register_contract(None, PulsarOracle);
+        let client = PulsarOracleClient::new(&env, &contract_id);
+
+        let admin = Address::generate(&env);
+        client.initialize(&admin);
+
+        let feed_id = symbol_short!("XLM_USD");
+        client.register_feed(&feed_id);
+
+        // f1 submits a wildly-off value at t=0, then the feed goes quiet
+        // for longer than the 5-minute freshness window.
+        let f1 = Address::generate(&env);
+        client.submit(&f1, &feed_id, &9_999_999);
+        env.ledger().set_timestamp(400);
+
+        // f2, f3, f4 submit once the feed resumes; f1's stale entry should
+        // be dropped rather than counted toward the threshold or median.
+        let f2 = Address::generate(&env);
+        let f3 = Address::generate(&env);
+        let f4 = Address::generate(&env);
+        client.submit(&f2, &feed_id, &1_000_000);
+        assert!(client.get(&feed_id).is_none()); // f1's stale entry was dropped, not counted
+        client.submit(&f3, &feed_id, &1_010_000);
+        client.submit(&f4, &feed_id, &1_020_000);
+
+        let result = client.get(&feed_id).expect("feed should exist");
+        assert_eq!(result.value, 1_010_000); // median of 1_000_000/1_010_000/1_020_000, excludes f1
     }
 
     #[test]
