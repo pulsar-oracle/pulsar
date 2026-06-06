@@ -9,6 +9,24 @@ export interface Config {
   activeFeeds: string[];
 }
 
+function parseNetwork(value: string | undefined): "testnet" | "mainnet" {
+  const network = value ?? "testnet";
+  if (network !== "testnet" && network !== "mainnet") {
+    throw new Error(
+      `Invalid STELLAR_NETWORK: "${network}" (expected "testnet" or "mainnet")`
+    );
+  }
+  return network;
+}
+
+function parseIntervalSeconds(value: string | undefined): number {
+  const interval = parseInt(value ?? "60", 10);
+  if (!Number.isFinite(interval) || interval <= 0) {
+    throw new Error(`Invalid SUBMISSION_INTERVAL: "${value}"`);
+  }
+  return interval;
+}
+
 export function loadConfig(): Config {
   const required = (key: string): string => {
     const val = process.env[key];
@@ -17,11 +35,11 @@ export function loadConfig(): Config {
   };
 
   return {
-    network: (process.env.STELLAR_NETWORK ?? "testnet") as "testnet" | "mainnet",
+    network: parseNetwork(process.env.STELLAR_NETWORK),
     rpcUrl: process.env.SOROBAN_RPC_URL ?? "https://soroban-testnet.stellar.org",
     contractId: required("PULSAR_CONTRACT_ID"),
     secretKey: required("FEEDER_SECRET_KEY"),
-    intervalSeconds: parseInt(process.env.SUBMISSION_INTERVAL ?? "60", 10),
+    intervalSeconds: parseIntervalSeconds(process.env.SUBMISSION_INTERVAL),
     activeFeeds: (process.env.ACTIVE_FEEDS ?? "XLM_USD").split(",").map((f) => f.trim()),
   };
 }
