@@ -38,7 +38,21 @@ impl PulsarOracle {
             .temporary()
             .get(&feed_id)
             .unwrap_or(Vec::new(&env));
-        pending.push_back(submission);
+
+        // Replace this feeder's existing pending submission (if any) rather
+        // than appending, so one feeder can't pad the round with repeated
+        // calls and single-handedly control the median.
+        let mut existing_idx = None;
+        for i in 0..pending.len() {
+            if pending.get_unchecked(i).feeder == submission.feeder {
+                existing_idx = Some(i);
+                break;
+            }
+        }
+        match existing_idx {
+            Some(i) => pending.set(i, submission),
+            None => pending.push_back(submission),
+        }
         env.storage().temporary().set(&feed_id, &pending);
 
         // Aggregate once we have enough submissions
@@ -90,6 +104,39 @@ mod tests {
 
         let result = client.get(&feed_id).expect("feed should exist");
         assert_eq!(result.value, 1_050_000); // median
+    }
+
+    #[test]
+    fn test_single_feeder_cannot_self_aggregate() {
+        let env = Env::default();
+        env.mock_all_auths();
+        let contract_id = env.register_contract(None, PulsarOracle);
+        let client = PulsarOracleClient::new(&env, &contract_id);
+
+        let admin = Address::generate(&env);
+        client.initialize(&admin);
+
+        let feed_id = symbol_short!("XLM_USD");
+        client.register_feed(&feed_id);
+
+        let attacker = Address::generate(&env);
+
+        // Same feeder submitting repeatedly should only ever occupy one
+        // pending slot, so it never reaches the aggregation threshold.
+        client.submit(&attacker, &feed_id, &1_000_000);
+        client.submit(&attacker, &feed_id, &2_000_000);
+        client.submit(&attacker, &feed_id, &3_000_000);
+        assert!(client.get(&feed_id).is_none());
+
+        // Two honest feeders join; aggregation now uses the attacker's
+        // latest (replaced) value plus the two honest ones.
+        let f2 = Address::generate(&env);
+        let f3 = Address::generate(&env);
+        client.submit(&f2, &feed_id, &2_900_000);
+        client.submit(&f3, &feed_id, &3_100_000);
+
+        let result = client.get(&feed_id).expect("feed should exist");
+        assert_eq!(result.value, 3_000_000); // median of 3_000_000/2_900_000/3_100_000
     }
 
     #[test]
